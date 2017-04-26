@@ -9,6 +9,10 @@
 #include "kalman_filter.h"
 #include "tools.h"
 
+
+const long noise_ax = 9;
+const long noise_ay = 9;
+
 class FusionEKF {
 public:
 	/**
