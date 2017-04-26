@@ -40,10 +40,10 @@ FusionEKF::FusionEKF() {
 	 */
 	VectorXd x = VectorXd(4);
 	MatrixXd P_ = MatrixXd(4,4);
-	P_ << 0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0;
+	P_ << 1000, 0, 0, 0,
+			0, 1000, 0, 0,
+			0, 0, 1000, 0,
+			0, 0, 0, 100;
 	MatrixXd F_ = MatrixXd(4,4);
 	F_ << 1, 0, 1, 0,
 			0, 1, 0, 1,
@@ -117,13 +117,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
 	previous_timestamp_ = measurement_pack.timestamp_;
 	//1. Modify the F matrix so that the time is integrated
-	ekf_.F_ << 1, 0, dt, 0,
-			0, 1, 0, dt,
-			0, 0, 1, 0,
-			0, 0, 0, 1;
+
+	ekf_.F_(0,2) = dt;
+	ekf_.F_(1,3) = dt;
+
+
 	//2. Set the process covariance matrix Q
-	long noise_ax = 81.0;
-	long noise_ay = 81.0;
+	const long noise_ax = 9;
+	const long noise_ay = 9;
 
 	ekf_.Q_ << (pow(dt,4) * noise_ax / 4.0), 0, (pow(dt,3) * noise_ax / 2.0), 0,
 			0, (pow(dt,4) * noise_ay / 4.0), 0, (pow(dt,3) * noise_ay / 2.0),
