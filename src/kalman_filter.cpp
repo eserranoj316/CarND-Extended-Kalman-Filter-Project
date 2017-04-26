@@ -1,4 +1,7 @@
 #include "kalman_filter.h"
+#include <math.h>
+
+#define PI 3.14159265
 
 
 using Eigen::MatrixXd;
@@ -37,9 +40,9 @@ void KalmanFilter::Update(const VectorXd &z) {
 	VectorXd z_pred = H_ * x_;
 	VectorXd y = z - z_pred;
 	MatrixXd Ht = H_.transpose();
-	MatrixXd S = H_ * P_ * Ht + R_;
-	MatrixXd Si = S.inverse();
 	MatrixXd PHt = P_ * Ht;
+	MatrixXd S = H_ * PHt + R_;
+	MatrixXd Si = S.inverse();
 	MatrixXd K = PHt * Si;
 
 	//new estimate
@@ -55,20 +58,20 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	 * update the state by using Extended Kalman Filter equations
 	 */
 	VectorXd z_pred = VectorXd(3);
-	float p = (sqrt((x_[0] * x_[0]) + (x_[1] * x_[1])));
+	float p = sqrt((x_(0) * x_(0)) + (x_(1) * x_(1)));
 	z_pred << p,
-			atan(x_[0] / x_[1]),
-			((x_[0] * x_[2]) + (x_[1] * x_[3])) / p;
-	VectorXd y = z - z_pred;
-	float pi = 3.141592;
-	while(y[1] > pi)
-		y[1] -= (2 * pi);
-	while(y[1] < -pi)
-		y[1] += (2 * pi);
+			atan2(x_(1), x_(0)),
+			((x_(0) * x_(2)) + (x_(1) * x_(3))) / p;
+	VectorXd y = VectorXd(3);
+	y << z - z_pred;
+	while(y(1) > PI)
+		y(1) -= (2 * PI);
+	while(y(1) < (-1 * PI))
+		y(1) += (2 * PI);
 	MatrixXd Ht = H_.transpose();
-	MatrixXd S = ((H_ * P_) * Ht) + R_;
-	MatrixXd Si = S.inverse();
 	MatrixXd PHt = P_ * Ht;
+	MatrixXd S = H_ * PHt + R_;
+	MatrixXd Si = S.inverse();
 	MatrixXd K = PHt * Si;
 
 	//new estimate
